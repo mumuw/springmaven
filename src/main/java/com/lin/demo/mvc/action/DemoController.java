@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @LinController
 @LinRequestMapping("/demo")
-public class DemoAction {
+public class DemoController {
     @LinAutowired
     private DemoService demoService;
     @LinRequestMapping("/name")

@@ -2,7 +2,7 @@ package com.lin.demo.mvc.service;
 
 import com.lin.framework.annotation.LinService;
 
-@LinService
+@LinService("demoService")
 public class DemoServiceImpl implements DemoService {
 
     @Override
