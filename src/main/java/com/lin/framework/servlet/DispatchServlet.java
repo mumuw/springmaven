@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
@@ -38,13 +39,35 @@ public class DispatchServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+        try {
+            doDispatch(req,resp);
+        }catch (Exception e){
+            e.printStackTrace();
+            resp.getWriter().write("500 Exception " + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
+    private void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws IOException, InvocationTargetException,IllegalAccessException{
+        System.out.println("----------------doDispatch-----------------");
+        String url = req.getRequestURI();
+        System.out.println("doDispatch url:" + url);
+        String contextPath = req.getContextPath();
+        System.out.println("doDispathc contextPath:" + contextPath);
+        url = url.replace(contextPath,"").replaceAll("/+","/");
+        if (!this.handlerMapping.containsKey(url)){
+            resp.getWriter().write("404 Not Found!!");
+            return;
+        }
+        Method method = this.handlerMapping.get(url);
+        Map<String,String[]> params = req.getParameterMap();
+        method.invoke(this.ioc.get(toLowerFirstCase(method.getDeclaringClass().getSimpleName())),new Object[]{req,resp,params.get("name")[0]});
     }
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         doLoadConfig(config.getInitParameter("contextConfigLocation"));
+
         doScanner(contextConfig.getProperty("scanPackage"));
         //3、初始化所有相关的类的实例，并且放入到IOC容器之中
         doInstance();
@@ -105,8 +128,9 @@ public class DispatchServlet extends HttpServlet {
                 if (StringUtil.isBlank(beanName)){
                     beanName = field.getType().getName();
                     System.out.println("doAutowired field.getType name:" + beanName);
+                }else {
+                    beanName = toLowerFirstCase(beanName);
                 }
-                beanName = toLowerFirstCase(beanName);
                 field.setAccessible(true);
                 try {
                     field.set(entry.getValue(), ioc.get(beanName));

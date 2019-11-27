@@ -2,6 +2,7 @@ package com.lin.demo.mvc.action;
 
 import com.sun.xml.internal.fastinfoset.util.StringArray;
 
+import java.security.SecureRandom;
 import java.util.UUID;
 
 public class Test {
@@ -57,6 +58,15 @@ public class Test {
     }
 
     public static void main(String[] args) {
+
+        long rnd = 1610465248;
+        SecureRandom random = new SecureRandom();
+        byte bytes[] = new byte[32];
+        random.nextBytes(bytes);
+        System.out.println(new String(bytes));
+        System.out.println(Integer.toHexString(1610465248));
+        long gClockSeq = rnd & 0x1FFF;
+        System.out.println("gclock" + gClockSeq);
         System.out.println(UUID.randomUUID().version());
         System.out.println("c0aaf972-fee2-46ef-bfca-ffb8a35516ef".replace("-",""));
         String re = hexToDecimal("c0aaf972-fee2-46ef-bfca-ffb8a35516ef".replace("-",""));
